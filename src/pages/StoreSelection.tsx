@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -33,7 +34,18 @@ const stores = [
 
 const StoreSelection = () => {
     const navigate = useNavigate();
+    const { user, loading } = useAuth();
     const [selectedStore, setSelectedStore] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate("/login");
+        }
+    }, [user, loading, navigate]);
+
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+    }
 
     const handleConfirm = () => {
         if (selectedStore) {

@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -56,6 +57,7 @@ const fadeUp = {
 };
 
 const MenuPage = () => {
+  const { user } = useAuth();
   const [active, setActive] = useState<Category>("All");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
@@ -94,6 +96,15 @@ const MenuPage = () => {
   };
 
   const checkout = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to proceed with your order.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
     toast({
       title: "Proceeding to checkout",
       description: "Please select a store to pick up your order.",
