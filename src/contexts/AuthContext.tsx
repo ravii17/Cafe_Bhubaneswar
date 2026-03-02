@@ -21,8 +21,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && !user.emailVerified) {
+        await firebaseSignOut(auth);
+        setUser(null);
+      } else {
+        setUser(user);
+      }
       setLoading(false);
     });
 

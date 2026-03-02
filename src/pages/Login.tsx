@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { auth } from "@/integrations/firebase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,10 +16,11 @@ type Mode = "login" | "signup";
 const Login = () => {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; displayName?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; confirmEmail?: string; password?: string; displayName?: string }>({});
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -35,6 +36,12 @@ const Login = () => {
     const errs: typeof errors = {};
     if (!email) errs.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(email)) errs.email = "Enter a valid email";
+
+    if (mode === "signup") {
+      if (!confirmEmail) errs.confirmEmail = "Please confirm your email";
+      else if (email !== confirmEmail) errs.confirmEmail = "Emails do not match";
+    }
+
     if (!password) errs.password = "Password is required";
     else if (password.length < 6) errs.password = "Must be at least 6 characters";
     if (mode === "signup" && !displayName.trim()) errs.displayName = "Name is required";
@@ -49,17 +56,23 @@ const Login = () => {
     setSubmitting(true);
     try {
       if (mode === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (!userCredential.user.emailVerified) {
+          await auth.signOut();
+          toast({ title: "Email not verified", description: "Please verify your email address before logging in.", variant: "destructive" });
+          return;
+        }
         toast({ title: "Welcome back!", description: "You've signed in successfully." });
         navigate("/");
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
           await updateProfile(userCredential.user, { displayName: displayName.trim() });
+          await sendEmailVerification(userCredential.user);
         }
         toast({
           title: "Account created!",
-          description: "You have signed up successfully.",
+          description: "Please check your email to verify your account before signing in.",
         });
         setMode("login");
       }
@@ -121,6 +134,20 @@ const Login = () => {
                 {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
               </div>
 
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmEmail">Confirm Email</Label>
+                  <Input
+                    id="confirmEmail"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={confirmEmail}
+                    onChange={(e) => setConfirmEmail(e.target.value)}
+                  />
+                  {errors.confirmEmail && <p className="text-sm text-destructive">{errors.confirmEmail}</p>}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -155,14 +182,20 @@ const Login = () => {
               {mode === "login" ? (
                 <>
                   Don't have an account?{" "}
-                  <button onClick={() => setMode("signup")} className="text-primary font-medium hover:underline">
+                  <button onClick={() => {
+                    setMode("signup");
+                    setErrors({});
+                  }} className="text-primary font-medium hover:underline">
                     Create Account
                   </button>
                 </>
               ) : (
                 <>
                   Already have an account?{" "}
-                  <button onClick={() => setMode("login")} className="text-primary font-medium hover:underline">
+                  <button onClick={() => {
+                    setMode("login");
+                    setErrors({});
+                  }} className="text-primary font-medium hover:underline">
                     Sign In
                   </button>
                 </>

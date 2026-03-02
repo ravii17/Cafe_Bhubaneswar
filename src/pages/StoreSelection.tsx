@@ -49,7 +49,7 @@ const StoreSelection = () => {
 
     const handleConfirm = () => {
         if (selectedStore) {
-            navigate("/order-status");
+            navigate("/payment");
         }
     };
 
