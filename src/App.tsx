@@ -11,6 +11,7 @@ import OrderStatus from "./pages/OrderStatus";
 import StoreSelection from "./pages/StoreSelection";
 import PaymentPage from "./pages/PaymentPage";
 import NotFound from "./pages/NotFound";
+import TableReservation from "./pages/TableReservation";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/store-selection" element={<StoreSelection />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/order-status" element={<OrderStatus />} />
+            <Route path="/reserve" element={<TableReservation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

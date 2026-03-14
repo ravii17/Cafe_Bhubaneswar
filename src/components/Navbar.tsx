@@ -50,10 +50,17 @@ const Navbar = () => {
             </Link>
           ))}
           {user ? (
-            <Button size="sm" variant="outline" className="rounded-full px-6 gap-2" onClick={signOut}>
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-4">
+              <Link to="/reserve">
+                <Button size="sm" className="rounded-full px-6 bg-accent hover:bg-accent/90 text-accent-foreground">
+                  Reserve Table
+                </Button>
+              </Link>
+              <Button size="sm" variant="outline" className="rounded-full px-6 gap-2" onClick={signOut}>
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           ) : (
             <Link to="/login">
               <Button size="sm" className="rounded-full px-6">
@@ -92,10 +99,17 @@ const Navbar = () => {
             </Link>
           ))}
           {user ? (
-            <Button variant="outline" className="w-full mt-2 rounded-full gap-2" onClick={() => { signOut(); setOpen(false); }}>
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="mt-2 flex flex-col gap-2">
+              <Link to="/reserve" onClick={() => setOpen(false)}>
+                <Button className="w-full rounded-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  Reserve Table
+                </Button>
+              </Link>
+              <Button variant="outline" className="w-full rounded-full gap-2" onClick={() => { signOut(); setOpen(false); }}>
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           ) : (
             <Link to="/login" onClick={() => setOpen(false)}>
               <Button className="w-full mt-2 rounded-full">Sign In</Button>
