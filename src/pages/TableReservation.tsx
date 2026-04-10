@@ -22,7 +22,6 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import emailjs from '@emailjs/browser';
 import heroBg from "@/assets/hero-bg.jpg";
 
 const TableReservation = () => {
@@ -69,12 +68,7 @@ const TableReservation = () => {
     setIsSubmitting(true);
 
     try {
-      // These are placeholders. You will need to replace them with your actual EmailJS credentials
-      const serviceId = "YOUR_SERVICE_ID";
-      const templateId = "YOUR_TEMPLATE_ID";
-      const publicKey = "YOUR_PUBLIC_KEY";
-
-      const templateParams = {
+      const payload = {
         to_email: user.email,
         to_name: user.displayName || "Guest",
         date: format(date, "PPP"),
@@ -83,11 +77,17 @@ const TableReservation = () => {
         special_requests: specialRequests || "None",
       };
 
-      // Uncomment this line when you have your EmailJS credentials
-      // await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      
-      // Simulate API call delay for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch("http://localhost:5000/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send email via backend");
+      }
 
       toast({
         title: "Reservation Confirmed!",
